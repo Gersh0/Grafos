@@ -160,7 +160,7 @@ public class Grafo<E extends Comparable<E>> {
 				temp.setAnterior(v);
 				temp.setDistance(newDistance);
 				queue.add(temp);
-			//Se pone así ya que la cola de prioridad se encarga de comparar y ver si vale la pena agregar.
+				//Se pone así ya que la cola de prioridad se encarga de comparar y ver si vale la pena agregar.
 				
 				/*
 				 * Al ser cola de prioridad me ahorro este if
@@ -173,7 +173,7 @@ public class Grafo<E extends Comparable<E>> {
 			}
 		}
 
-		return new Stack<>(); //En caso de que no encuentre ruta :D
+		return new Stack<>(); //En caso de que no encuentre camino :D
 	}
 
 	private Stack<Vertice<E>> construirCamino(Vertice<E> destino) { //Crear el camino aparte para mejor lectura.
