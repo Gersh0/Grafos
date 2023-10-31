@@ -1,7 +1,9 @@
 package grafos;
 
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.ListIterator;
+import java.util.PriorityQueue;
 import java.util.Queue;
 import java.util.Stack;
 
@@ -63,7 +65,9 @@ public class Grafo<E extends Comparable<E>> {
 		return stack;
 	}
 
-	public Stack<Vertice<E>> dijkstra(Vertice<E> inicio, Vertice<E> destino) {
+	public Stack<Vertice<E>> dijkstra1(Vertice<E> inicio, Vertice<E> destino) {
+		// El primer método que hice, funciona y es parecido al método que hice en clase
+		// pero con una condición adicional.
 		inicializarVertices();
 		Queue<Vertice<E>> camino = new LinkedList<Vertice<E>>();
 		inicio.setDistance(0);
@@ -76,7 +80,7 @@ public class Grafo<E extends Comparable<E>> {
 				Arista<E> aTemp = a.next();
 				Vertice<E> temp = aTemp.getDestino();
 
-				if (temp.getDistance() > aTemp.getPeso()) {
+				if (temp.getDistance() > aTemp.getPeso()) { //Condición adicional.
 					temp.setAnterior(v);
 					temp.setDistance(temp.getAnterior().getDistance() + aTemp.getPeso());
 					camino.add(temp);
@@ -99,11 +103,97 @@ public class Grafo<E extends Comparable<E>> {
 		return stack;
 	}
 
+	public Stack<Vertice<E>> dijkstra2(Vertice<E> inicio, Vertice<E> destino) {
+		// Parecido al método dijkstra1 pero sin la condición que evalúa si el anterior es
+		// null ya que siempre revisa si tiene un peso menor.
+		inicializarVertices();
+		Queue<Vertice<E>> camino = new LinkedList<Vertice<E>>();
+		inicio.setDistance(0);
+		camino.add(inicio);
+
+		while (!camino.isEmpty()) {
+			Vertice<E> v = camino.poll();
+			LinkedList<Arista<E>> adyacentes = v.getAdyacentes();
+
+			for (Arista<E> aTemp : adyacentes) {
+				Vertice<E> temp = aTemp.getDestino();
+				double newDistance = v.getDistance() + aTemp.getPeso();
+
+				if (newDistance < temp.getDistance()) {
+					temp.setAnterior(v);
+					temp.setDistance(newDistance);
+					camino.add(temp);
+				}
+			}
+		}
+
+		Stack<Vertice<E>> stack = new Stack<Vertice<E>>();
+		Vertice<E> v = destino;
+		stack.push(v);
+
+		while (v.getAnterior() != null) {
+			v = v.getAnterior();
+			stack.push(v);
+		}
+
+		return stack;
+	}
+
+	public Stack<Vertice<E>> dijkstra(Vertice<E> inicio, Vertice<E> destino) {
+		// Método final, con método que crea camino por fuera y cola de prioridad para
+		// que siempre agregue el camino de menor ruta
+		inicializarVertices();
+		PriorityQueue<Vertice<E>> queue = new PriorityQueue<>(Comparator.comparing(Vertice::getDistance));
+		inicio.setDistance(0);
+		queue.add(inicio);
+
+		while (!queue.isEmpty()) {
+			Vertice<E> v = queue.poll();
+
+			if (v.compareTo(destino) == 0) {
+				return construirCamino(destino);
+			}
+
+			for (Arista<E> aTemp : v.getAdyacentes()) {
+				Vertice<E> temp = aTemp.getDestino();
+				double newDistance = v.getDistance() + aTemp.getPeso();
+				temp.setAnterior(v);
+				temp.setDistance(newDistance);
+				queue.add(temp);
+			//Se pone así ya que la cola de prioridad se encarga de comparar y ver si vale la pena agregar.
+				
+				/*
+				 * Al ser cola de prioridad me ahorro este if
+				 * if (newDistance < temp.getDistance()){
+				 * temp.setAnterior(v); 
+				 * temp.setDistance(newDistance); 
+				 * queue.add(temp); 
+				 * }
+				 */
+			}
+		}
+
+		return new Stack<>(); //En caso de que no encuentre ruta :D
+	}
+
+	private Stack<Vertice<E>> construirCamino(Vertice<E> destino) { //Crear el camino aparte para mejor lectura.
+		Stack<Vertice<E>> stack = new Stack<>();
+		Vertice<E> v = destino;
+
+		while (v != null) {
+			stack.push(v);
+			v = v.getAnterior();
+		}
+
+		return stack;
+	}
+
 	public void imprimirCamino(Stack<Vertice<E>> s) {
 		while (!s.isEmpty()) {
 			Vertice<E> v = s.pop();
-			System.out.print(v.getInfo() + "\s\n");
+			System.out.print(v.getInfo() + "\s");
 		}
+		System.out.println();
 	}
 
 	public Grafo() {
@@ -172,21 +262,24 @@ public class Grafo<E extends Comparable<E>> {
 		grafo.getVertices().add(v8);
 
 		/*
-		 * Caminos para probar:
-		 * 1->4
-		 * 1->6
-		 * 2->7
-		 * 4->7
+		 * Caminos para probar: 1->4 1->6 2->7 4->7
 		 */
-		
+
 		try {
+			System.out.println("Sin Dijkstra");
+			grafo.imprimirCamino(grafo.MenorCaminoSinPesos(v1, v4));
 			grafo.imprimirCamino(grafo.MenorCaminoSinPesos(v1, v6));
+			grafo.imprimirCamino(grafo.MenorCaminoSinPesos(v2, v7));
+			grafo.imprimirCamino(grafo.MenorCaminoSinPesos(v4, v7));
 		} catch (ExcepcionVertice e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		System.out.println("Con Dijkstra");
+		grafo.imprimirCamino(grafo.dijkstra(v1, v4));
 		grafo.imprimirCamino(grafo.dijkstra(v1, v6));
-
+		grafo.imprimirCamino(grafo.dijkstra(v2, v7));
+		grafo.imprimirCamino(grafo.dijkstra(v4, v7));
 	}
 
 }
