@@ -80,7 +80,7 @@ public class Grafo<E extends Comparable<E>> {
 				Arista<E> aTemp = a.next();
 				Vertice<E> temp = aTemp.getDestino();
 
-				if (temp.getDistance() > aTemp.getPeso()) { //Condición adicional.
+				if (temp.getDistance() > aTemp.getPeso()) { // Condición adicional.
 					temp.setAnterior(v);
 					temp.setDistance(temp.getAnterior().getDistance() + aTemp.getPeso());
 					camino.add(temp);
@@ -104,7 +104,8 @@ public class Grafo<E extends Comparable<E>> {
 	}
 
 	public Stack<Vertice<E>> dijkstra2(Vertice<E> inicio, Vertice<E> destino) {
-		// Parecido al método dijkstra1 pero sin la condición que evalúa si el anterior es
+		// Parecido al método dijkstra1 pero sin la condición que evalúa si el anterior
+		// es
 		// null ya que siempre revisa si tiene un peso menor.
 		inicializarVertices();
 		Queue<Vertice<E>> camino = new LinkedList<Vertice<E>>();
@@ -149,34 +150,36 @@ public class Grafo<E extends Comparable<E>> {
 
 		while (!queue.isEmpty()) {
 			Vertice<E> v = queue.poll();
-
+			LinkedList<Arista<E>> adyacentes = v.getAdyacentes();
+			ListIterator<Arista<E>> a = adyacentes.listIterator();
 			if (v.compareTo(destino) == 0) {
 				return construirCamino(destino);
 			}
-
-			for (Arista<E> aTemp : v.getAdyacentes()) {
+			while (a.hasNext()) {
+				Arista<E> aTemp = a.next();
 				Vertice<E> temp = aTemp.getDestino();
 				double newDistance = v.getDistance() + aTemp.getPeso();
-				temp.setAnterior(v);
-				temp.setDistance(newDistance);
-				queue.add(temp);
-				//Se pone así ya que la cola de prioridad se encarga de comparar y ver si vale la pena agregar.
-				
-				/*
-				 * Al ser cola de prioridad me ahorro este if
-				 * if (newDistance < temp.getDistance()){
-				 * temp.setAnterior(v); 
-				 * temp.setDistance(newDistance); 
-				 * queue.add(temp); 
-				 * }
-				 */
+				if (newDistance < temp.getDistance()) {
+					temp.setAnterior(v);
+					temp.setDistance(newDistance);
+					queue.add(temp);
+				}
+
 			}
 		}
 
-		return new Stack<>(); //En caso de que no encuentre camino :D
+		return new Stack<>(); // En caso de que no encuentre camino :D
 	}
+	// Se pone así ya que la cola de prioridad se encarga de comparar y ver si vale
+	// la pena agregar.
 
-	private Stack<Vertice<E>> construirCamino(Vertice<E> destino) { //Crear el camino aparte para mejor lectura.
+	/*
+	 * Al ser cola de prioridad me ahorro este if if (newDistance <
+	 * temp.getDistance()){ temp.setAnterior(v); temp.setDistance(newDistance);
+	 * queue.add(temp); }
+	 */
+
+	private Stack<Vertice<E>> construirCamino(Vertice<E> destino) { // Crear el camino aparte para mejor lectura.
 		Stack<Vertice<E>> stack = new Stack<>();
 		Vertice<E> v = destino;
 
